@@ -34,23 +34,24 @@ def print_stats(tp):
 
 
 def numerize(tp, user2id, movie2id):
-    uid = list(map(lambda x: user2id[x], tp['userId']))
-    sid = list(map(lambda x: movie2id[x], tp['itemId']))
-    #print(uid[1])
-    tp['userId'] = uid
-    tp['itemId'] = sid
-    return tp
+    return pd.DataFrame(
+        {   'userId' : tp['userId'].map(user2id),
+            'itemId': tp['itemId'].map(movie2id),
+            'rating': tp['rating']
+        })
 
 
 def filter_triplets(tp, min_uc=20, min_sc=1):
     # Only keep the triplets for songs which were listened to by at least min_sc users.
     moviecount = get_count(tp, 'itemId')
-    tp = tp[tp['itemId'].isin(moviecount.index[moviecount >= min_sc])]
+    itemsWithAtleastMinScUsersPerMovie = moviecount[moviecount['size'] >= min_sc]['itemId']
+    tp = tp[tp['itemId'].isin(itemsWithAtleastMinScUsersPerMovie)]
 
     # Only keep the triplets for users who listened to at least min_uc songs
     # After doing this, some of the songs will have less than min_uc users, but should only be a small proportion
     usercount = get_count(tp, 'userId')
-    tp = tp[tp['userId'].isin(usercount.index[usercount >= min_uc])]
+    itemsWithAtleastMinUcMoviesPerUser = usercount[usercount['size'] >= min_uc]['userId']
+    tp = tp[tp['userId'].isin(itemsWithAtleastMinUcMoviesPerUser)]
     return tp
 
 
@@ -61,8 +62,8 @@ raw_data = filter_triplets(raw_data, min_uc=20, min_sc=1)
 print_stats(raw_data)
 # Map the string ids to unique incremental integer ids for both users and songs
 usercount, songcount = get_count(raw_data, 'userId'), get_count(raw_data, 'itemId')
-unique_uid = usercount.index
-unique_sid = songcount.index
+unique_uid = usercount['userId']
+unique_sid = songcount['itemId']
 song2id = dict((sid, i) for (i, sid) in enumerate(unique_sid))
 user2id = dict((uid, i) for (i, uid) in enumerate(unique_uid))
 
