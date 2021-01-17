@@ -1,11 +1,10 @@
 package gfar;
 
 import es.uam.eps.ir.ranksys.core.Recommendation;
-import es.uam.eps.ir.ranksys.core.preference.PreferenceData;
-import es.uam.eps.ir.ranksys.core.preference.SimplePreferenceData;
 import es.uam.eps.ir.ranksys.novdiv.reranking.Reranker;
 import gfar.rerank.*;
-import gfar.util.GFARPreferenceReader;
+import gfar.util.Params;
+import gfar.util.ParseArgs;
 import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 import org.jooq.lambda.Unchecked;
 import org.ranksys.formats.rec.RecommendationFormat;
@@ -25,33 +24,27 @@ import static org.ranksys.formats.parsing.Parsers.lp;
 public class RunGreedyAlgorithms {
     public static void main(String[] args) throws Exception {
         String PROJECT_FOLDER = Paths.get(System.getProperty("user.dir")).getParent().toString();
-        String[] DataFolders = {PROJECT_FOLDER + "/data/ml1m/",
-                PROJECT_FOLDER + "/data/kgrec/"};
-        String[] individualRecFileName = {"mf_30_1.0", "mf_230_1.0"};
 
-        String[] folds = {"1", "2", "3", "4", "5"};
+        Params params = ParseArgs.Parse(args);
+        if (params == null) {
+            System.exit(1);
+        }
 
-
-        //int[] groupSize = {2, 3, 4, 5, 6, 7, 8};
-        int[] groupSize = {8};
-        String[] groupTypes = {"div", "random", "sim"};
-
-
-        double[] lambdas = {1.0};
+        double[] lambdas = { 1.0 };
         int cutoff = 10000;
         int maxLength = 20;
 
-        for (int i = 0; i < DataFolders.length; i++) {
-            String DATA_PATH = DataFolders[i];
-            String individualRecsFileName = individualRecFileName[i];
-            for (int size : groupSize) {
+        for (int i = 0; i < params.datasets.size(); i++) {
+            String DATA_PATH = PROJECT_FOLDER + "/data/" + params.datasets.get(i) + "/";
+            String individualRecsFileName = params.individualRecFileName.get(i);
+            for (int size : params.groupSize) {
                 System.out.println("Group Size: " + size);
-                for (String groupType : groupTypes) {
+                for (String groupType : params.groupTypes) {
                     System.out.println("Group Type: " + groupType);
                     String fileName = individualRecsFileName + "_avg_" + groupType + "_group_" + size;
                     String groupsFilePath = DATA_PATH + groupType + "_group_" + size;
                     Map<Long, List<Long>> groups = loadGroups(groupsFilePath);
-                    for (String fold : folds) {
+                    for (String fold : params.folds) {
                         System.out.println("Fold: " + fold);
                         String recIn = DATA_PATH + fold + "/" + individualRecsFileName;
                         String groupRecIn = DATA_PATH + fold + "/" + fileName;
