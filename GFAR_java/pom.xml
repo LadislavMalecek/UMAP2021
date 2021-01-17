@@ -86,6 +86,11 @@ Licensed under the Apache License, Version 2.0 (the "License");
             <artifactId>mahout-math</artifactId>
             <version>0.8</version>
         </dependency>
+        <dependency>
+            <groupId>org.javatuples</groupId>
+            <artifactId>javatuples</artifactId>
+            <version>1.2</version>
+        </dependency>
     </dependencies>
 
 
