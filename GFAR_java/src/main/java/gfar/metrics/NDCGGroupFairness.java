@@ -2,8 +2,9 @@ package gfar.metrics;
 
 import es.uam.eps.ir.ranksys.core.Recommendation;
 import es.uam.eps.ir.ranksys.metrics.AbstractRecommendationMetric;
-import es.uam.eps.ir.ranksys.metrics.basic.NDCG;
 import es.uam.eps.ir.ranksys.metrics.rank.RankingDiscountModel;
+import gfar.util.ListAnalyzer;
+
 import org.ranksys.core.util.tuples.Tuple2od;
 
 import java.util.ArrayList;
@@ -20,13 +21,13 @@ import java.util.Map;
  */
 public class NDCGGroupFairness<G, I, U> extends AbstractRecommendationMetric<G, I> {
 
-    private final NDCG.NDCGRelevanceModel<U, I> relModel;
+    private final RelevanceModel<U, I> relModel;
     private final int cutoff;
     private final RankingDiscountModel disc;
     private final Map<G, List<U>> groups;
     private final String TYPE;
 
-    public NDCGGroupFairness(NDCG.NDCGRelevanceModel<U, I> relModel, int cutoff, RankingDiscountModel disc, Map<G, List<U>> groups, String type) {
+    public NDCGGroupFairness(RelevanceModel<U, I> relModel, int cutoff, RankingDiscountModel disc, Map<G, List<U>> groups, String type) {
         this.relModel = relModel;
         this.cutoff = cutoff;
         this.disc = disc;
@@ -39,13 +40,15 @@ public class NDCGGroupFairness<G, I, U> extends AbstractRecommendationMetric<G, 
         List<U> groupMembers = groups.get(recommendation.getUser());
         List<Double> group_val = new ArrayList<>();
         for (U user : groupMembers) {
-            NDCG.NDCGRelevanceModel<U, I>.UserNDCGRelevanceModel userRelModel = (NDCG.NDCGRelevanceModel<U, I>.UserNDCGRelevanceModel) relModel.getModel(user);
+
+            RelevanceModel<U,I>.UserRelevanceModel userRelModel = (RelevanceModel<U, I>.UserRelevanceModel) relModel.getModel(user);
 
             double ndcg = 0.0;
             int rank = 0;
 
             for (Tuple2od<I> pair : recommendation.getItems()) {
-                ndcg += userRelModel.gain(pair.v1) * disc.disc(rank);
+                double gain = userRelModel.gain(pair.v1);
+                ndcg += gain * disc.disc(rank);
 
                 rank++;
                 if (rank >= cutoff) {
@@ -57,21 +60,11 @@ public class NDCGGroupFairness<G, I, U> extends AbstractRecommendationMetric<G, 
             }
             group_val.add(ndcg);
         }
-        double result = 0.0;
-        if (group_val.size() != 0) {
-            if (TYPE.equals("MIN"))
-                result = group_val.stream().mapToDouble(v -> v).min().getAsDouble();
-            else if (TYPE.equals("MIN-MAX")) {
-                double max = group_val.stream().mapToDouble(v -> v).max().getAsDouble();
-                double min = group_val.stream().mapToDouble(v -> v).min().getAsDouble();
-                if (max != 0)
-                    result = min / max;
-            }
-        }
-        return result;
+
+        return ListAnalyzer.Eval(group_val, TYPE);
     }
 
-    private double idcg(NDCG.NDCGRelevanceModel.UserNDCGRelevanceModel relModel) {
+    private double idcg(RelevanceModel<U, I>.UserRelevanceModel relModel) {
         double[] gains = relModel.getGainValues();
         Arrays.sort(gains);
 
@@ -85,5 +78,4 @@ public class NDCGGroupFairness<G, I, U> extends AbstractRecommendationMetric<G, 
 
         return idcg;
     }
-
 }

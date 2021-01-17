@@ -4,6 +4,8 @@ import es.uam.eps.ir.ranksys.core.Recommendation;
 import es.uam.eps.ir.ranksys.metrics.AbstractRecommendationMetric;
 import es.uam.eps.ir.ranksys.metrics.rank.RankingDiscountModel;
 import es.uam.eps.ir.ranksys.metrics.rel.RelevanceModel;
+import gfar.util.ListAnalyzer;
+
 import org.ranksys.core.util.tuples.Tuple2od;
 
 import java.util.ArrayList;
@@ -55,17 +57,7 @@ public class DiscountedFirstHitFairness<G, I, U> extends AbstractRecommendationM
             }
             group_val.add(val);
         }
-        double result = 0.0;
-        if (group_val.size() != 0) {
-            if (TYPE.equals("MIN"))
-                result = group_val.stream().mapToDouble(v -> v).min().getAsDouble();
-            else if (TYPE.equals("MIN-MAX")) {
-                double max = group_val.stream().mapToDouble(v -> v).max().getAsDouble();
-                double min = group_val.stream().mapToDouble(v -> v).min().getAsDouble();
-                if (max != 0)
-                    result = min / max;
-            }
-        }
-        return result;
+        
+        return ListAnalyzer.Eval(group_val, TYPE);
     }
 }

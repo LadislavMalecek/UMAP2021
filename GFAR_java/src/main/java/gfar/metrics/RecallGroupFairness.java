@@ -3,6 +3,8 @@ package gfar.metrics;
 import es.uam.eps.ir.ranksys.core.Recommendation;
 import es.uam.eps.ir.ranksys.metrics.AbstractRecommendationMetric;
 import es.uam.eps.ir.ranksys.metrics.rel.IdealRelevanceModel;
+import gfar.util.ListAnalyzer;
+
 import org.ranksys.core.util.tuples.Tuple2od;
 
 import java.util.ArrayList;
@@ -11,6 +13,7 @@ import java.util.Map;
 
 /**
  * Recall (min or minmax) metric in the paper
+ * 
  * @param <G>
  * @param <I>
  * @param <U>
@@ -40,21 +43,10 @@ public class RecallGroupFairness<G, I, U> extends AbstractRecommendationMetric<G
                     .limit(cutoff)
                     .map(Tuple2od::v1)
                     .filter(userRelModel::isRelevant)
-                    .count() / (double) numberOfAllRelevant;//Math.min(cutoff, numberOfAllRelevant)
+                    .count() / (double) numberOfAllRelevant;
             group_val.add(val);
         }
 
-        double result = 0.0;
-        if (group_val.size() != 0) {
-            if (TYPE.equals("MIN"))
-                result = group_val.stream().mapToDouble(v -> v).min().getAsDouble();
-            else if (TYPE.equals("MIN-MAX")) {
-                double max = group_val.stream().mapToDouble(v -> v).max().getAsDouble();
-                double min = group_val.stream().mapToDouble(v -> v).min().getAsDouble();
-                if (max != 0)
-                    result = min / max;
-            }
-        }
-        return result;
+        return ListAnalyzer.Eval(group_val, TYPE);
     }
 }
