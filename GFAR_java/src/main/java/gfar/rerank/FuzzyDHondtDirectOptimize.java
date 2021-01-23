@@ -81,9 +81,11 @@ public class FuzzyDHondtDirectOptimize<G, U, I> extends FuzzyDHondt<G, U, I> {
             // normalize to sum to 1
             Double sum = this.usersPrefInGroup.stream().mapToDouble(v -> v).sum();
 
-            for(int index = 0; index < this.usersPrefInGroup.size(); index++){
-                Double newVal = this.usersPrefInGroup.get(index) / sum;
-                this.usersPrefInGroup.set(index, newVal);
+            if(sum != 1.0){
+                for(int index = 0; index < this.usersPrefInGroup.size(); index++){
+                    Double newVal = this.usersPrefInGroup.get(index) / sum;
+                    this.usersPrefInGroup.set(index, newVal);
+                }
             }
 
 
@@ -188,7 +190,7 @@ public class FuzzyDHondtDirectOptimize<G, U, I> extends FuzzyDHondt<G, U, I> {
 
             double[] recommendationsForUsers = getRecommendationsForUsers(usersInGroup, item);
 
-            double totalUtilityForNewItem = 0.0;
+            double log_totalUtilityForNewItem = 0.0;
 
             int index = 0;
             for (U user : usersInGroup) {
@@ -198,12 +200,12 @@ public class FuzzyDHondtDirectOptimize<G, U, I> extends FuzzyDHondt<G, U, I> {
                 double newRelevanceOfSelectedForUser = currentRelevanceOfSelectedForUser + itemRelevanceToUser;
                 this.currentRelevanceOfSelectedForUsers.put(user, newRelevanceOfSelectedForUser);
 
-                totalUtilityForNewItem += itemRelevanceToUser;
+                log_totalUtilityForNewItem += itemRelevanceToUser;
 
                 index++;
             }
 
-            System.out.println("Object selected: " + bestItemValue.v1 + " utility: " + totalUtilityForNewItem
+            System.out.println("Object selected: " + bestItemValue.v1 + " utility: " + log_totalUtilityForNewItem
                     + " individualUtil: " + Arrays.toString(recommendationsForUsers) + " curMult: " + this.currentMultiplier);
 
             this.totalUtilityForSelectedSoFar = this.getSumOfRelevanceOfSelectedForUsers();

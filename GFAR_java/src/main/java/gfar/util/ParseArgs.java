@@ -14,6 +14,7 @@ public class ParseArgs {
         final String test = "--test";
 
         Params params = new Params();
+        params.allParams = Arrays.asList(args);
 
         if(Arrays.asList(args).contains(test)){
             params.datasets = Arrays.asList("ml1m");

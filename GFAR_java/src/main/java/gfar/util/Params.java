@@ -11,4 +11,6 @@ public class Params {
     public List<String> folds = new ArrayList<>(Arrays.asList("1", "2", "3", "4", "5"));
     public List<Integer> groupSize = new ArrayList<>(Arrays.asList(2, 3, 4, 8));
     public List<String> groupTypes = new ArrayList<>(Arrays.asList("div", "random", "sim"));
+
+    public List<String> allParams;
 }

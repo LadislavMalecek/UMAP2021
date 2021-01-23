@@ -169,9 +169,9 @@ public class FuzzyDHondt<G, U, I> extends LambdaReranker<G, I> {
             I item = tupleOfItemAndValue.v1;
             Double itemsUtility = 0.0;
 
-            Double[] recommendationsForUser = getRecommendationsForUsers(usersInGroup, item);
+            Double[] recommendationsForUsers = getRecommendationsForUsers(usersInGroup, item);
             for (int uIndex = 0; uIndex < usersInGroup.size(); uIndex++) {
-                Double relevanceToUser = recommendationsForUser[uIndex];
+                Double relevanceToUser = recommendationsForUsers[uIndex];
                 itemsUtility += relevanceToUser * this.currentVotingSupportToUsers[uIndex];
             }
 
