@@ -2,10 +2,11 @@ package gfar;
 
 import es.uam.eps.ir.ranksys.core.Recommendation;
 import es.uam.eps.ir.ranksys.novdiv.reranking.Reranker;
-import gfar.rerank.FuzzyDHondt;
 import gfar.rerank.FuzzyDHondtDirectOptimize;
 import gfar.util.*;
 import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
+
+import org.javatuples.Pair;
 import org.jooq.lambda.Unchecked;
 import org.ranksys.formats.rec.RecommendationFormat;
 import org.ranksys.formats.rec.SimpleRecommendationFormat;
@@ -42,7 +43,7 @@ public class RunDDOA {
                     System.out.println("Group Type: " + groupType);
                     String fileName = individualRecsFileName + "_avg_" + groupType + "_group_" + size;
                     String groupsFilePath = DATA_PATH + groupType + "_group_" + size;
-                    Map<Long, List<Long>> groups = LoadData.loadGroups(groupsFilePath);
+                    Map<Long, Pair<List<Long>, List<Double>>> groups = LoadData.loadGroupsWithUniformUserPreferences(groupsFilePath, 1.0);
                     for (String fold : params.folds) {
                         System.out.println("Fold: " + fold);
                         String recIn = DATA_PATH + fold + "/" + individualRecsFileName;
@@ -65,7 +66,7 @@ public class RunDDOA {
                         for (double lambda : lambdas) {
                             rerankersMap.put("FuzzyDHondtDirectOptimize" + "_" + lambda,
                                 () -> new FuzzyDHondtDirectOptimize<>(lambda, cutoff, true, maxLength,
-                                    groups, individualRecommendations, null, null, null, null, false, null, null));
+                                    groups, individualRecommendations, null, null, null, false, null, null));
                         }
                         rerankersMap.forEach(Unchecked.biConsumer((name, rerankerSupplier) -> {
                             System.out.println("Running " + name);

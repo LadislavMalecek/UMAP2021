@@ -3,12 +3,13 @@ package gfar.rerank;
 import es.uam.eps.ir.ranksys.core.Recommendation;
 import es.uam.eps.ir.ranksys.novdiv.reranking.LambdaReranker;
 
+import org.javatuples.Pair;
 import org.ranksys.core.util.tuples.Tuple2od;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * SPGreedy algorithm from the paper "Fairness in Package-to-Group
@@ -26,31 +27,21 @@ public class FuzzyDHondt<G, U, I> extends LambdaReranker<G, I> {
     // Algorithm's parameters
 
     // Data for recommender
-    protected Map<G, List<U>> group_members;
+    protected Map<G, Pair<List<U>, List<Double>>> groupMembers;
     protected int maxLength;
     protected Map<U, Recommendation<U, I>> individualRecommendations;
 
     // rearanged recommandations to allow for mor efficient data access
     protected Map<U, Map<I, Double>> recommendations;
 
-    // in DHondt's alg. this represents the result of election
-    // Use uniform distribution if not set
-    protected Map<U, Double> individualPreferences;
-
-
-    public FuzzyDHondt(double lambda, int cutoff, boolean norm, int maxLength, Map<G, List<U>> group_members,
-            Map<U, Recommendation<U, I>> individualRecommendations, Map<U, Double> individualPreferences,
+    public FuzzyDHondt(double lambda, int cutoff, boolean norm, int maxLength, Map<G, Pair<List<U>, List<Double>>> groupMembers,
+            Map<U, Recommendation<U, I>> individualRecommendations,
             Double minimumItemScoreToBeConsidered, Double constantDecrease, Double negativePartMultiplier, Double exponentialFactor) {
         super(lambda, cutoff, norm);
         System.out.println("FuzzyDHondt constructor");
-        this.group_members = group_members;
+        this.groupMembers = groupMembers;
         this.individualRecommendations = individualRecommendations;
         this.maxLength = maxLength;
-        this.individualPreferences = individualPreferences;
-
-        if (this.individualPreferences == null) {
-            initUniformIndividualPreferences();
-        }
 
         this.TransformRecommendations(minimumItemScoreToBeConsidered, constantDecrease, negativePartMultiplier, exponentialFactor);
     }
@@ -90,19 +81,7 @@ public class FuzzyDHondt<G, U, I> extends LambdaReranker<G, I> {
 
     @Override
     protected GreedyUserReranker<G, I> getUserReranker(Recommendation<G, I> recommendation, int maxLength) {
-        return new UserFuzzyDHondt(recommendation, individualPreferences, maxLength);
-    }
-
-    private void initUniformIndividualPreferences() {
-        System.out.println("initUniformIndividualPreferences started.");
-        List<U> users = individualRecommendations.keySet().stream().collect(Collectors.toList());
-        Double uniformPreferenceValue = 1.0;
-        this.individualPreferences = new HashMap<>();
-        for (U user : users) {
-            this.individualPreferences.put(user, uniformPreferenceValue);
-        }
-        System.out.println("initUniformIndividualPreferences finished.");
-
+        return new UserFuzzyDHondt(recommendation, maxLength);
     }
 
     public class UserFuzzyDHondt extends LambdaUserReranker {
@@ -117,6 +96,7 @@ public class FuzzyDHondt<G, U, I> extends LambdaReranker<G, I> {
 
         // order of users is the same
         private List<U> usersInGroup;
+        private List<Double> usersPrefInGroup;
 
         private Double[] startingVotingSupport;
         private Double[] currentVotingSupportToUsers;
@@ -131,33 +111,32 @@ public class FuzzyDHondt<G, U, I> extends LambdaReranker<G, I> {
          * @param individualPreferences starting prefferences to users in reranking
          * @param maxLength             maximum length of the re-ranked recommendation
          */
-        public UserFuzzyDHondt(Recommendation<G, I> recommendation, Map<U, Double> individualPreferences,
-                int maxLength) {
+        public UserFuzzyDHondt(Recommendation<G, I> recommendation, int maxLength) {
             super(recommendation, maxLength);
             System.out.println("UserFuzzyDHondtDirect constructor");
 
             this.group = recommendation.getUser();
-            this.usersInGroup = group_members.get(this.group);
-
-            this.init(individualPreferences);
-        }
-
-        private void init(Map<U, Double> individualPreferences) {
-            int userCount = this.usersInGroup.size();
-            this.startingVotingSupport = new Double[userCount];
-            this.currentVotingSupportToUsers = new Double[userCount];
-            this.alreadySelectedItemsRelevanceToUsers = new Double[userCount];
-
-            int uIndex = 0;
-            for (U user : this.usersInGroup) {
-                // initialize selected relevance to each users
-                this.startingVotingSupport[uIndex] = individualPreferences.getOrDefault(user, 0.0);
-                this.currentVotingSupportToUsers[uIndex] = startingVotingSupport[uIndex];
-                // to 1.0 so we can ommit +1 in the DHondt's calculations
-                this.alreadySelectedItemsRelevanceToUsers[uIndex] = 1.0;
-                uIndex++;
+            this.usersInGroup = groupMembers.get(this.group).getValue0();
+            this.usersPrefInGroup = groupMembers.get(this.group).getValue1();
+            int groupSize = this.usersInGroup.size();
+            
+            // initialize the preferences, if pref included in data then use them, if not use uniform 1
+            boolean prefdataMissing = this.usersPrefInGroup == null || this.usersPrefInGroup.isEmpty();
+            if(prefdataMissing){
+                this.startingVotingSupport = new Double[groupSize];
+                Arrays.fill(this.startingVotingSupport, 1.0);
+                this.currentVotingSupportToUsers = new Double[groupSize];
+                Arrays.fill(this.currentVotingSupportToUsers, 1.0);
+            } else {
+                this.startingVotingSupport = usersPrefInGroup.toArray(new Double[groupSize]);
+                this.currentVotingSupportToUsers = usersPrefInGroup.toArray(new Double[groupSize]);
             }
+
+            this.alreadySelectedItemsRelevanceToUsers = new Double[groupSize];
+            Arrays.fill(this.alreadySelectedItemsRelevanceToUsers, 1.0);
         }
+
+        
 
         private void recalculateCurrentDHnodtsSupport() {
             for (int uIndex = 0; uIndex < this.usersInGroup.size(); uIndex++) {

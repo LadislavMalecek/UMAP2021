@@ -1,6 +1,8 @@
 package gfar.rerank;
 
 import es.uam.eps.ir.ranksys.core.Recommendation;
+
+import org.javatuples.Pair;
 import org.ranksys.core.util.tuples.Tuple2od;
 
 import java.util.Arrays;
@@ -24,12 +26,12 @@ public class FuzzyDHondtDirectOptimize<G, U, I> extends FuzzyDHondt<G, U, I> {
     private Double excessTaperMultiplier;
     
     public FuzzyDHondtDirectOptimize(double lambda, int cutoff, boolean norm, int maxLength,
-            Map<G, List<U>> group_members, Map<U, Recommendation<U, I>> individualRecommendations,
-            Map<U, Double> individualPreferences, Double minimumItemScoreToBeConsidered, Double constantDecrease,
+            Map<G, Pair<List<U>, List<Double>>> groupMembers, Map<U, Recommendation<U, I>> individualRecommendations,
+            Double minimumItemScoreToBeConsidered, Double constantDecrease,
             Double negativePartMultiplier, Boolean discountByPossition, Double excessMultiplier,
             Double exponentialFactor) {
 
-        super(lambda, cutoff, norm, maxLength, group_members, individualRecommendations, individualPreferences,
+        super(lambda, cutoff, norm, maxLength, groupMembers, individualRecommendations,
                 minimumItemScoreToBeConsidered, constantDecrease, negativePartMultiplier, exponentialFactor);
             
         this.isDiscountByPossition = discountByPossition;
@@ -40,7 +42,7 @@ public class FuzzyDHondtDirectOptimize<G, U, I> extends FuzzyDHondt<G, U, I> {
 
     @Override
     protected GreedyUserReranker<G, I> getUserReranker(Recommendation<G, I> recommendation, int maxLength) {
-        return new UserFuzzyDHondtDirectOptimize(recommendation, individualPreferences, maxLength,
+        return new UserFuzzyDHondtDirectOptimize(recommendation, maxLength,
                 this.isDiscountByPossition, this.excessTaperMultiplier);
     }
 
@@ -53,13 +55,14 @@ public class FuzzyDHondtDirectOptimize<G, U, I> extends FuzzyDHondt<G, U, I> {
         private Double totalUtilityForSelectedSoFar;
 
         private List<U> usersInGroup;
+        private List<Double> usersPrefInGroup;
 
         private Boolean discountByPossition;
         private int currentPosition = 1;
         
         private double currentMultiplier = 1.0;
         
-        //by default we cut it away
+        // by default we cut it away
         private double excessMultiplier = 0.0;
         /**
          * Constructor.
@@ -68,12 +71,21 @@ public class FuzzyDHondtDirectOptimize<G, U, I> extends FuzzyDHondt<G, U, I> {
          * @param individualPreferences starting prefferences to users in reranking
          * @param maxLength             maximum length of the re-ranked recommendation
          */
-        public UserFuzzyDHondtDirectOptimize(Recommendation<G, I> recommendation, Map<U, Double> individualPreferences,
-                int maxLength, Boolean isDiscountByPossition, Double excessTaperMultiplier) {
+        public UserFuzzyDHondtDirectOptimize(Recommendation<G, I> recommendation, int maxLength, Boolean isDiscountByPossition, Double excessTaperMultiplier) {
             super(recommendation, maxLength);
             System.out.println("UserFuzzyDHondtDirectOptimize constructor");
             this.group = recommendation.getUser();
-            this.usersInGroup = group_members.get(this.group);
+            this.usersInGroup = groupMembers.get(this.group).getValue0();
+            this.usersPrefInGroup = groupMembers.get(this.group).getValue1();
+
+            // normalize to sum to 1
+            Double sum = this.usersPrefInGroup.stream().mapToDouble(v -> v).sum();
+
+            for(int index = 0; index < this.usersPrefInGroup.size(); index++){
+                Double newVal = this.usersPrefInGroup.get(index) / sum;
+                this.usersPrefInGroup.set(index, newVal);
+            }
+
 
             // this.partyVotingSupport = individualPreferences;
             // this.normalizePartyVotingSupport();
@@ -83,7 +95,7 @@ public class FuzzyDHondtDirectOptimize<G, U, I> extends FuzzyDHondt<G, U, I> {
             this.totalUtilityForSelectedSoFar = 0.0;
             this.discountByPossition = isDiscountByPossition;
 
-            if(excessTaperMultiplier != null){
+            if (excessTaperMultiplier != null) {
                 this.excessMultiplier = excessTaperMultiplier.doubleValue();
             }
         }
@@ -126,22 +138,22 @@ public class FuzzyDHondtDirectOptimize<G, U, I> extends FuzzyDHondt<G, U, I> {
 
             // Double itemsCeiledUtility = 0.0;
 
-
             // used as a temporary storage so that we do not query the data twice
             double[] recommendationsForUser = getRecommendationsForUsers(usersInGroup, item);
             double itemsTotalUtility = totalUtility(recommendationsForUser);
 
             double totalPlusProspectedUtility = itemsTotalUtility + totalUtilityForSelectedSoFar;
 
-            double uniformVotingSupport = 1.0 / usersInGroup.size();
+            
             int index = 0;
             for (U user : usersInGroup) {
+                Double usersVotingSupport = usersPrefInGroup.get(index);
                 // get the fraction of under-representation for the party
                 // check how much proportional representation the candidate adds
                 // sum over all parties & select the highest sum
 
                 // Double usersSupport = this.partyVotingSupport.getOrDefault(user, 0.0);
-                double totalPlusProspectedUtilityScaled = totalPlusProspectedUtility * uniformVotingSupport;
+                double totalPlusProspectedUtilityScaled = totalPlusProspectedUtility * usersVotingSupport;
 
                 double alreadySelectedRelevanceToParty = currentRelevanceOfSelectedForUsers.getOrDefault(user, 0.0);
 
@@ -151,7 +163,6 @@ public class FuzzyDHondtDirectOptimize<G, U, I> extends FuzzyDHondt<G, U, I> {
 
                 double itemsUnscaledRelevance = recommendationsForUser[index];
 
-                // itemsUtility += Double.min(itemsUnscaledRelevance, notFulfilledPartyRelevance);
 
                 double amountOverShot = itemsUnscaledRelevance - notFulfilledPartyRelevance;
                 if(amountOverShot > 0){
@@ -174,7 +185,6 @@ public class FuzzyDHondtDirectOptimize<G, U, I> extends FuzzyDHondt<G, U, I> {
             // check who voted for the selected user
             // for each user that did, decrease its voting power by the fuzzy DHondt's rule
             I item = bestItemValue.v1;
-            List<U> usersInGroup = group_members.get(this.group);
 
             double[] recommendationsForUsers = getRecommendationsForUsers(usersInGroup, item);
 

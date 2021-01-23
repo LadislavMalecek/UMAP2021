@@ -5,12 +5,12 @@ import es.uam.eps.ir.ranksys.novdiv.reranking.Reranker;
 import gfar.rerank.FuzzyDHondt;
 import gfar.util.*;
 import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
+
+import org.javatuples.Pair;
 import org.jooq.lambda.Unchecked;
 import org.ranksys.formats.rec.RecommendationFormat;
 import org.ranksys.formats.rec.SimpleRecommendationFormat;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Supplier;
@@ -45,7 +45,7 @@ public class RunDA {
                     // it contains all items and all groups
                     String fileName = individualRecsFileName + "_avg_" + groupType + "_group_" + size;
                     String groupsFilePath = DATA_PATH + groupType + "_group_" + size;
-                    Map<Long, List<Long>> groups = LoadData.loadGroups(groupsFilePath);
+                    Map<Long, Pair<List<Long>, List<Double>>> groups = LoadData.loadGroupsWithUniformUserPreferences(groupsFilePath, 1.0);
                     for (String fold : params.folds) {
                         System.out.println("Fold: " + fold);
                         String recIn = DATA_PATH + fold + "/" + individualRecsFileName;
@@ -68,7 +68,7 @@ public class RunDA {
                         for (double lambda : lambdas) {
                             rerankersMap.put("FuzzyDHondt" + "_" + lambda, 
                                 () -> new FuzzyDHondt<>(lambda, cutoff, true, maxLength,
-                                    groups, individualRecommendations, null, null, null, null, null));
+                                    groups, individualRecommendations, null, null, null, null));
                         }
                         rerankersMap.forEach(Unchecked.biConsumer((name, rerankerSupplier) -> {
                             System.out.println("Running " + name);
