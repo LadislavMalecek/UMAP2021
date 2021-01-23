@@ -12,8 +12,6 @@ import es.uam.eps.ir.ranksys.metrics.rel.BinaryRelevanceModel;
 import gfar.metrics.*;
 import gfar.util.*;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -156,7 +154,8 @@ public class FairnessCollectResults {
                     
                         String fileName = fileNameBase + groupSize;
                         String groupsFilePath = DATA_PATH + groupType + "_group_" + groupSize;
-                        Map<Long, List<Long>> groups = loadGroups(groupsFilePath);
+                        Map<Long, List<Long>> groups = LoadData.loadGroups(groupsFilePath);
+
                         int numGroups = groups.size();
 
 
@@ -303,38 +302,5 @@ public class FairnessCollectResults {
             }
             System.out.println("=================================================");
         }
-    }
-
-    /**
-     * Loads the ids of the users for each group from a file (for synthetic groups)!
-     *
-     * @param filePath
-     * @return
-     */
-    public static Map<Long, List<Long>> loadGroups(String filePath) {
-        Scanner s = null;
-        try {
-            s = new Scanner(new File(filePath));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        Map<Long, List<Long>> groups = new HashMap<>();
-
-        if (s != null) {
-            while (s.hasNext()) {
-                List<Long> group_members = new ArrayList<>();
-                String[] parsedLine = s.nextLine().split("\t");
-                long id = Long.parseLong(parsedLine[0]);
-                for (int i = 1; i < parsedLine.length; i++) {
-                    group_members.add(Long.parseLong(parsedLine[i]));
-                }
-                groups.put(id, group_members);
-            }
-        }
-        if (s != null) {
-            s.close();
-        }
-        return groups;
     }
 }

@@ -20,8 +20,6 @@ import org.ranksys.formats.index.UsersReader;
 import org.ranksys.formats.rec.RecommendationFormat;
 import org.ranksys.formats.rec.SimpleRecommendationFormat;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.DoubleUnaryOperator;
@@ -104,61 +102,5 @@ public class GenerateIndividualRecommendations {
                 }));
             }
         }
-    }
-
-    /**
-     * If we want to generate recommendations for only a subset of users, we should create a file that each line
-     * consists of user IDs, and use this method.
-     *
-     * @param filePath
-     * @return
-     */
-    public static Set<Long> loadTestUsers(String filePath) {
-        Scanner s = null;
-        try {
-            s = new Scanner(new File(filePath));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        Set<Long> list = new HashSet<>();
-        assert s != null;
-        while (s.hasNext()) {
-            list.add(Long.parseLong(s.next()));
-        }
-        s.close();
-        return list;
-    }
-
-    /**
-     * Loads the ids of the users for each group from a file (for synthetic groups)!
-     *
-     * @param filePath
-     * @return
-     */
-    public static Map<Long, List<Long>> loadGroups(String filePath) {
-        Scanner s = null;
-        try {
-            s = new Scanner(new File(filePath));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        Map<Long, List<Long>> groups = new HashMap<>();
-
-        if (s != null) {
-            while (s.hasNext()) {
-                List<Long> group_members = new ArrayList<>();
-                String[] parsedLine = s.nextLine().split("\t");
-                long id = Long.parseLong(parsedLine[0]);
-                for (int i = 1; i < parsedLine.length; i++) {
-                    group_members.add(Long.parseLong(parsedLine[i]));
-                }
-                groups.put(id, group_members);
-            }
-        }
-        if (s != null) {
-            s.close();
-        }
-        return groups;
     }
 }

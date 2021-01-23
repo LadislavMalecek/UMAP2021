@@ -5,6 +5,7 @@ import es.uam.eps.ir.ranksys.core.preference.PreferenceData;
 import es.uam.eps.ir.ranksys.core.preference.SimplePreferenceData;
 import es.uam.eps.ir.ranksys.novdiv.reranking.Reranker;
 import gfar.util.GFARPreferenceReader;
+import gfar.util.LoadData;
 import gfar.util.Params;
 import gfar.util.ParseArgs;
 
@@ -13,8 +14,6 @@ import org.ranksys.formats.rec.RecommendationFormat;
 import org.ranksys.formats.rec.SimpleRecommendationFormat;
 import gfar.rerank.*;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Supplier;
@@ -46,7 +45,7 @@ public class RunGFAR {
                         System.out.println("Group Type: " + groupType);
                         String fileName = individualRecsFileName + "_avg_" + groupType + "_group_" + size;
                         String groupsFilePath = DATA_PATH + groupType + "_group_" + size;
-                        Map<Long, List<Long>> groups = loadGroups(groupsFilePath);
+                        Map<Long, List<Long>> groups = LoadData.loadGroups(groupsFilePath);
                         for (String fold : params.folds) {
                             System.out.println("Fold: " + fold);
                             String recIn = DATA_PATH + fold + "/" + individualRecsFileName;
@@ -85,38 +84,5 @@ public class RunGFAR {
                 }
             }
         }
-    }
-
-    /**
-     * Loads the ids of the users for each group from a file (for synthetic groups)!
-     *
-     * @param filePath
-     * @return
-     */
-    public static Map<Long, List<Long>> loadGroups(String filePath) {
-        Scanner s = null;
-        try {
-            s = new Scanner(new File(filePath));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        Map<Long, List<Long>> groups = new HashMap<>();
-
-        if (s != null) {
-            while (s.hasNext()) {
-                List<Long> group_members = new ArrayList<>();
-                String[] parsedLine = s.nextLine().split("\t");
-                long id = Long.parseLong(parsedLine[0]);
-                for (int i = 1; i < parsedLine.length; i++) {
-                    group_members.add(Long.parseLong(parsedLine[i]));
-                }
-                groups.put(id, group_members);
-            }
-        }
-        if (s != null) {
-            s.close();
-        }
-        return groups;
     }
 }
