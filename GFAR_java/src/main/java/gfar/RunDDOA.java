@@ -124,14 +124,21 @@ public class RunDDOA {
                                 rerankersMap.put("FuzzyDHondtDirectOptimizeExcessMul0.2" + "_" + lambda,
                                         () -> new FuzzyDHondtDirectOptimize<>(lambda, cutoff, true, maxLength, groups,
                                                 individualRecommendations, /* minimumItemScoreToBeConsidered */ null,
-                                                /* constantDecrease */ 3.5, /* negativePartMultiplier */ null,
+                                                /* constantDecrease */ null, /* negativePartMultiplier */ null,
                                                 /* discountByPossition */ false, /* excessMultiplier */ 0.2, null));
 
                                 rerankersMap.put("FuzzyDHondtDirectOptimizeExponential2.0" + "_" + lambda,
                                         () -> new FuzzyDHondtDirectOptimize<>(lambda, cutoff, true, maxLength, groups,
                                                 individualRecommendations, /* minimumItemScoreToBeConsidered */ null,
-                                                /* constantDecrease */ 3.5, /* negativePartMultiplier */ null,
+                                                /* constantDecrease */ null, /* negativePartMultiplier */ null,
                                                 /* discountByPossition */ false, /* excessMultiplier */ null, 2.0));
+
+                                rerankersMap.put("FuzzyDHondtDirectOptimizeExp2CDec3Relu0.25Exc0.25" + "_" + lambda,
+                                        () -> new FuzzyDHondtDirectOptimize<>(lambda, cutoff, true, maxLength, groups,
+                                                individualRecommendations, /* minimumItemScoreToBeConsidered */ null,
+                                                /* constantDecrease */ 3.0, /* negativePartMultiplier */ 1.0 / 4,
+                                                /* discountByPossition */ false, /* excessMultiplier */ 1.0 / 4, 
+                                                /* exponenial */ 2.0));
                             }
                         }
                         rerankersMap.forEach(Unchecked.biConsumer((name, rerankerSupplier) -> {

@@ -58,6 +58,12 @@ public class FairnessCollectResults {
 
             algorithmNames.add("FuzzyDHondtDirectOptimizeExcessMul0.2");
             reRankStrings.add("_FuzzyDHondtDirectOptimizeExcessMul0.2_1.0");
+
+            algorithmNames.add("FuzzyDHondtDirectOptimizeExponential2.0");
+            reRankStrings.add("_FuzzyDHondtDirectOptimizeExponential2.0");
+            
+            algorithmNames.add("FuzzyDHondtDirectOptimizeExp2CDec3Relu0.25Exc0.25");
+            reRankStrings.add("_FuzzyDHondtDirectOptimizeExp2CDec3Relu0.25Exc0.25");
         }
     }
 
