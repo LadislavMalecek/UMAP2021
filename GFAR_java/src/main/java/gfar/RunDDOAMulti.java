@@ -73,49 +73,56 @@ public class RunDDOAMulti {
                                             individualRecommendations, /* individualPreferences */ null,
                                             /* minimumItemScoreToBeConsidered */ minLimit, /* constantDecrease */ null,
                                             /* negativePartMultiplier */ null, /* discountByPossition */ false,
-                                            /* excessMultiplier */ null));
+                                            /* excessMultiplier */ null, null));
 
                             rerankersMap.put("FuzzyDHondtDirectOptimizeRelu0.5" + "_" + lambda,
                                     () -> new FuzzyDHondtDirectOptimize<>(lambda, cutoff, true, maxLength, groups,
                                             individualRecommendations, /* individualPreferences */ null,
                                             /* minimumItemScoreToBeConsidered */ null, /* constantDecrease */ null,
                                             /* negativePartMultiplier */ 1.0 / 2, /* discountByPossition */ false,
-                                            /* excessMultiplier */ null));
+                                            /* excessMultiplier */ null, null));
 
                             rerankersMap.put("FuzzyDHondtDirectOptimizeRelu0.125" + "_" + lambda,
                                     () -> new FuzzyDHondtDirectOptimize<>(lambda, cutoff, true, maxLength, groups,
                                             individualRecommendations, /* individualPreferences */ null,
                                             /* minimumItemScoreToBeConsidered */ null, /* constantDecrease */ null,
                                             /* negativePartMultiplier */ 1.0 / 8, /* discountByPossition */ false,
-                                            /* excessMultiplier */ null));
+                                            /* excessMultiplier */ null, null));
 
                             rerankersMap.put("FuzzyDHondtDirectOptimizePosDiscount" + "_" + lambda,
                                     () -> new FuzzyDHondtDirectOptimize<>(lambda, cutoff, true, maxLength, groups,
                                             individualRecommendations, /* individualPreferences */ null,
                                             /* minimumItemScoreToBeConsidered */ null, /* constantDecrease */ null,
                                             /* negativePartMultiplier */ null, /* discountByPossition */ true,
-                                            /* excessMultiplier */ null));
+                                            /* excessMultiplier */ null, null));
 
                             rerankersMap.put("FuzzyDHondtDirectOptimizeConstDec4" + "_" + lambda,
                                     () -> new FuzzyDHondtDirectOptimize<>(lambda, cutoff, true, maxLength, groups,
                                             individualRecommendations, /* individualPreferences */ null,
                                             /* minimumItemScoreToBeConsidered */ null, /* constantDecrease */ 4.0,
                                             /* negativePartMultiplier */ null, /* discountByPossition */ false,
-                                            /* excessMultiplier */ null));
+                                            /* excessMultiplier */ null, null));
 
                             rerankersMap.put("FuzzyDHondtDirectOptimizeConstDec3.5" + "_" + lambda,
                                     () -> new FuzzyDHondtDirectOptimize<>(lambda, cutoff, true, maxLength, groups,
                                             individualRecommendations, /* individualPreferences */ null,
                                             /* minimumItemScoreToBeConsidered */ null, /* constantDecrease */ 3.5,
                                             /* negativePartMultiplier */ null, /* discountByPossition */ false,
-                                            /* excessMultiplier */ null));
+                                            /* excessMultiplier */ null, null));
 
                             rerankersMap.put("FuzzyDHondtDirectOptimizeExcessMul0.2" + "_" + lambda,
                                     () -> new FuzzyDHondtDirectOptimize<>(lambda, cutoff, true, maxLength, groups,
                                             individualRecommendations, /* individualPreferences */ null,
                                             /* minimumItemScoreToBeConsidered */ null, /* constantDecrease */ 3.5,
                                             /* negativePartMultiplier */ null, /* discountByPossition */ false,
-                                            /* excessMultiplier */ 0.2));
+                                            /* excessMultiplier */ 0.2, null));
+
+                            rerankersMap.put("FuzzyDHondtDirectOptimizeSquare" + "_" + lambda,
+                                    () -> new FuzzyDHondtDirectOptimize<>(lambda, cutoff, true, maxLength, groups,
+                                            individualRecommendations, /* individualPreferences */ null,
+                                            /* minimumItemScoreToBeConsidered */ null, /* constantDecrease */ 3.5,
+                                            /* negativePartMultiplier */ null, /* discountByPossition */ false,
+                                            /* excessMultiplier */ null, 2.0));
 
                         }
                         rerankersMap.forEach(Unchecked.biConsumer((name, rerankerSupplier) -> {

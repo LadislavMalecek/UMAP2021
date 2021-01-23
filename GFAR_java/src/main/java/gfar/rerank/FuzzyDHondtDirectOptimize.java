@@ -26,10 +26,11 @@ public class FuzzyDHondtDirectOptimize<G, U, I> extends FuzzyDHondt<G, U, I> {
     public FuzzyDHondtDirectOptimize(double lambda, int cutoff, boolean norm, int maxLength,
             Map<G, List<U>> group_members, Map<U, Recommendation<U, I>> individualRecommendations,
             Map<U, Double> individualPreferences, Double minimumItemScoreToBeConsidered, Double constantDecrease,
-            Double negativePartMultiplier, Boolean discountByPossition, Double excessMultiplier) {
+            Double negativePartMultiplier, Boolean discountByPossition, Double excessMultiplier,
+            Double exponentialFactor) {
 
         super(lambda, cutoff, norm, maxLength, group_members, individualRecommendations, individualPreferences,
-                minimumItemScoreToBeConsidered, constantDecrease, negativePartMultiplier);
+                minimumItemScoreToBeConsidered, constantDecrease, negativePartMultiplier, exponentialFactor);
             
         this.isDiscountByPossition = discountByPossition;
         this.excessTaperMultiplier = excessMultiplier;
@@ -39,7 +40,8 @@ public class FuzzyDHondtDirectOptimize<G, U, I> extends FuzzyDHondt<G, U, I> {
 
     @Override
     protected GreedyUserReranker<G, I> getUserReranker(Recommendation<G, I> recommendation, int maxLength) {
-        return new UserFuzzyDHondtDirectOptimize(recommendation, individualPreferences, maxLength, this.isDiscountByPossition, this.excessTaperMultiplier);
+        return new UserFuzzyDHondtDirectOptimize(recommendation, individualPreferences, maxLength,
+                this.isDiscountByPossition, this.excessTaperMultiplier);
     }
 
     // runs for each group

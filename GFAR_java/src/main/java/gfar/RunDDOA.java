@@ -67,7 +67,7 @@ public class RunDDOA {
                         for (double lambda : lambdas) {
                             rerankersMap.put("FuzzyDHondtDirectOptimize" + "_" + lambda,
                                 () -> new FuzzyDHondtDirectOptimize<>(lambda, cutoff, true, maxLength,
-                                    groups, individualRecommendations, null, null, null, null, false, null));
+                                    groups, individualRecommendations, null, null, null, null, false, null, null));
                         }
                         rerankersMap.forEach(Unchecked.biConsumer((name, rerankerSupplier) -> {
                             System.out.println("Running " + name);

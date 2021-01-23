@@ -40,7 +40,7 @@ public class FuzzyDHondt<G, U, I> extends LambdaReranker<G, I> {
 
     public FuzzyDHondt(double lambda, int cutoff, boolean norm, int maxLength, Map<G, List<U>> group_members,
             Map<U, Recommendation<U, I>> individualRecommendations, Map<U, Double> individualPreferences,
-            Double minimumItemScoreToBeConsidered, Double constantDecrease, Double negativePartMultiplier) {
+            Double minimumItemScoreToBeConsidered, Double constantDecrease, Double negativePartMultiplier, Double exponentialFactor) {
         super(lambda, cutoff, norm);
         System.out.println("FuzzyDHondt constructor");
         this.group_members = group_members;
@@ -52,12 +52,12 @@ public class FuzzyDHondt<G, U, I> extends LambdaReranker<G, I> {
             initUniformIndividualPreferences();
         }
 
-        this.TransformRecommendations(minimumItemScoreToBeConsidered, constantDecrease, negativePartMultiplier);
+        this.TransformRecommendations(minimumItemScoreToBeConsidered, constantDecrease, negativePartMultiplier, exponentialFactor);
     }
 
     // Transforms recommendations into sensible data access first format
     private void TransformRecommendations(Double minimumItemScoreToBeConsidered, Double constantDecrease,
-            Double negativePartMultiplier) {
+            Double negativePartMultiplier, Double exponentialFactor) {
         System.out.println("TransformRecommendations started.");
         this.recommendations = new HashMap<>();
         for (Recommendation<U, I> recommendations : individualRecommendations.values()) {
@@ -77,6 +77,9 @@ public class FuzzyDHondt<G, U, I> extends LambdaReranker<G, I> {
                 if (minimumItemScoreToBeConsidered != null && recommendation.v2 < minimumItemScoreToBeConsidered) {
                     // skip adding the value - so when retrieved it will be the default 0
                     continue;
+                }
+                if(exponentialFactor != null){
+                    rating = Math.pow(rating, exponentialFactor);
                 }
                 userMap.put(recommendation.v1, recommendation.v2);
             }

@@ -41,6 +41,8 @@ public class RunDA {
                 System.out.println("Group Size: " + size);
                 for (String groupType : params.groupTypes) {
                     System.out.println("Group Type: " + groupType);
+                    // use avg group rec aggregation as a basis
+                    // it contains all items and all groups
                     String fileName = individualRecsFileName + "_avg_" + groupType + "_group_" + size;
                     String groupsFilePath = DATA_PATH + groupType + "_group_" + size;
                     Map<Long, List<Long>> groups = loadGroups(groupsFilePath);
@@ -66,7 +68,7 @@ public class RunDA {
                         for (double lambda : lambdas) {
                             rerankersMap.put("FuzzyDHondt" + "_" + lambda, 
                                 () -> new FuzzyDHondt<>(lambda, cutoff, true, maxLength,
-                                    groups, individualRecommendations, null, null, null, null));
+                                    groups, individualRecommendations, null, null, null, null, null));
                         }
                         rerankersMap.forEach(Unchecked.biConsumer((name, rerankerSupplier) -> {
                             System.out.println("Running " + name);
