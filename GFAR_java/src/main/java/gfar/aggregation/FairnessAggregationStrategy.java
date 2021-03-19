@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
  * @param <I>
  * @param <G>
  */
-public class FairnessAggregationStrategy<U, I, G> extends AbstractAggregationStrategy<U, I, G> {
+public class FairnessAggregationStrategy<U, I, G> implements AggregationStrategy<U, I, G> {
     private G groupID;
     private List<U> group_members;
     private long top_N;
