@@ -88,6 +88,7 @@ public class SPGreedy<G, U, I> extends LambdaReranker<G, I> {
 
         @Override
         protected void update(Tuple2od<I> bestItemValue) {
+            System.out.println("Object selected: " + bestItemValue.v1);
             // Update individual utility for each group member here, after selecting a new item greedily!
             group_members.get(group).forEach(u -> {
                 double increment = 0.0;

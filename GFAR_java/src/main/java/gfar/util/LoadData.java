@@ -47,11 +47,16 @@ public class LoadData {
     }
 
     public static Map<Long, Pair<List<Long>, List<Double>>> loadGroupsWithUserPreferences(String filePath) {
+        return loadGroupsWithUserPreferences(filePath, filePath + "_weights");
+    }
+
+    public static Map<Long, Pair<List<Long>, List<Double>>> loadGroupsWithUserPreferences(String filePath,
+            String prefFilePath) {
         Scanner s = null;
         Scanner s_pref = null;
         try {
             s = new Scanner(new File(filePath));
-            s_pref = new Scanner(new File(filePath + "_weights"));
+            s_pref = new Scanner(new File(prefFilePath));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -94,6 +99,18 @@ public class LoadData {
             int size = list.size();
             List<Double> prefList = new ArrayList<Double>(Collections.nCopies(size, uniformPreferenceValue));
             newWithUniformPref.put(key, new Pair<>(list, prefList));
+        });
+
+        return newWithUniformPref;
+    }
+
+    public static Map<Long, Pair<List<Long>, List<Double>>> loadGroupsWithUserPreferencesFromMap(String filePath,
+            Map<Long, List<Double>> groupUserPrefs) {
+        Map<Long, List<Long>> originalWithoutPref = loadGroups(filePath);
+        Map<Long, Pair<List<Long>, List<Double>>> newWithUniformPref = new HashMap<>();
+
+        originalWithoutPref.forEach((key, list) -> {
+            newWithUniformPref.put(key, new Pair<>(list, groupUserPrefs.get(key)));
         });
 
         return newWithUniformPref;

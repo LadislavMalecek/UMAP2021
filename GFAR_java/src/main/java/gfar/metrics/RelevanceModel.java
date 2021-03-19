@@ -1,7 +1,10 @@
 package gfar.metrics;
 
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import es.uam.eps.ir.ranksys.core.preference.IdPref;
 import es.uam.eps.ir.ranksys.core.preference.PreferenceData;
 import es.uam.eps.ir.ranksys.metrics.rel.IdealRelevanceModel;
 import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
@@ -63,12 +66,22 @@ public class RelevanceModel<U, I> extends IdealRelevanceModel<U, I> {
             gainMap.defaultReturnValue(0.0);
 
             if (type == "LIN") {
-                testData.getUserPreferences(user).filter(iv -> iv.v2 >= threshold).forEach(iv -> gainMap.put(iv.v1, iv.v2 - threshold + 1));
+                List<IdPref<I>> userRec = testData.getUserPreferences(user).filter(iv -> iv.v2 >= threshold)
+                        .collect(Collectors.toList());
+                for (IdPref<I> rec : userRec) {
+                    gainMap.put(rec.v1, rec.v2 - threshold + 1);
+                }
+
+                // testData.getUserPreferences(user).filter(iv -> iv.v2 >= threshold)
+                //         .forEach(iv -> gainMap.put(iv.v1, iv.v2 - threshold + 1));
             } else if (type == "EXP") {
-                testData.getUserPreferences(user).filter(iv -> iv.v2 >= threshold).forEach(iv -> gainMap.put(iv.v1, Math.pow(2, iv.v2 - threshold + 1.0) - 1.0));
-            } else if(type == "BIN"){
-                testData.getUserPreferences(user).filter(iv -> iv.v2 >= threshold).forEach(iv -> gainMap.put(iv.v1, 1.0));
-            } else throw new IllegalArgumentException("Invalid relevance type: " + type);
+                testData.getUserPreferences(user).filter(iv -> iv.v2 >= threshold)
+                        .forEach(iv -> gainMap.put(iv.v1, Math.pow(2, iv.v2 - threshold + 1.0) - 1.0));
+            } else if (type == "BIN") {
+                testData.getUserPreferences(user).filter(iv -> iv.v2 >= threshold)
+                        .forEach(iv -> gainMap.put(iv.v1, 1.0));
+            } else
+                throw new IllegalArgumentException("Invalid relevance type: " + type);
         }
 
         /**

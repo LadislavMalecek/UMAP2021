@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * SPGreedy algorithm from the paper "Fairness in Package-to-Group
@@ -24,15 +25,23 @@ import java.util.Map;
 public class FuzzyDHondtDirectOptimize<G, U, I> extends FuzzyDHondt<G, U, I> {
     private Boolean isDiscountByPossition;
     private Double excessTaperMultiplier;
+
+    public FuzzyDHondtDirectOptimize(Double lambda, int cutoff, boolean norm, int maxLength,
+            Map<G, Pair<List<U>, List<Double>>> groupMembers, Map<U, Recommendation<U, I>> individualRecommendations,
+            Double minimumItemScoreToBeConsidered, Double constantDecrease, Double negativePartMultiplier,
+            Boolean discountByPossition, Double excessMultiplier, Double exponentialFactor){
+        this(lambda,  cutoff, norm, maxLength, groupMembers, individualRecommendations, minimumItemScoreToBeConsidered,
+            constantDecrease, negativePartMultiplier, discountByPossition, excessMultiplier, exponentialFactor, null);
+    }
     
     public FuzzyDHondtDirectOptimize(double lambda, int cutoff, boolean norm, int maxLength,
             Map<G, Pair<List<U>, List<Double>>> groupMembers, Map<U, Recommendation<U, I>> individualRecommendations,
             Double minimumItemScoreToBeConsidered, Double constantDecrease,
             Double negativePartMultiplier, Boolean discountByPossition, Double excessMultiplier,
-            Double exponentialFactor) {
+            Double exponentialFactor, Map<G, List<Double>> returnGroupItemsRelevance) {
 
         super(lambda, cutoff, norm, maxLength, groupMembers, individualRecommendations,
-                minimumItemScoreToBeConsidered, constantDecrease, negativePartMultiplier, exponentialFactor);
+                minimumItemScoreToBeConsidered, constantDecrease, negativePartMultiplier, exponentialFactor, returnGroupItemsRelevance);
             
         this.isDiscountByPossition = discountByPossition;
         this.excessTaperMultiplier = excessMultiplier;
@@ -217,6 +226,15 @@ public class FuzzyDHondtDirectOptimize<G, U, I> extends FuzzyDHondt<G, U, I> {
                 // possition starts at 1 and we want 1/dcg
                 // this.currentMultiplier = 1 / (Math.log(2.0) / Math.log(this.currentPosition + 1)); is eq with below
                 this.currentMultiplier = Math.log(2.0) / Math.log(this.currentPosition + 1);
+            }
+
+
+            // we could do this also in discounted fassion
+            if (returnGroupItemsRelevance != null) {
+                List<Double> alreadySelected = usersInGroup.stream().map(gm -> currentRelevanceOfSelectedForUsers.getOrDefault(gm, 0.0)).collect(Collectors.toList());
+                Double sum = alreadySelected.stream().mapToDouble(m -> m).sum();
+                List<Double> normalized = alreadySelected.stream().map(m -> m / sum).collect(Collectors.toList());
+                returnGroupItemsRelevance.put(group, normalized);
             }
         }
     }

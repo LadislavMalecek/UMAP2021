@@ -8,7 +8,6 @@ import es.uam.eps.ir.ranksys.metrics.SystemMetric;
 import es.uam.eps.ir.ranksys.metrics.basic.AverageRecommendationMetric;
 import es.uam.eps.ir.ranksys.metrics.rank.LogarithmicDiscountModel;
 import es.uam.eps.ir.ranksys.metrics.rel.BinaryRelevanceModel;
-
 import gfar.metrics.*;
 import gfar.util.*;
 
@@ -25,36 +24,36 @@ import static org.ranksys.formats.parsing.Parsers.lp;
 public class FairnessCollectResults {
 
     static List<String> algorithmNames = new ArrayList<>(
-            Arrays.asList("AVG", "FAI", "XPO", "GreedyLM", "SPGreedy", "GFAR"));
+            /* Arrays.asList("AVG", "FAI", "XPO", "GreedyLM", "SPGreedy", "GFAR")*/);
     static List<String> reRankStrings = new ArrayList<>(
-            Arrays.asList("", "", "", "_GreedyLM_1.0", "_SPGreedy_1.0", "_GFAR_1.0"));
+            /*Arrays.asList("", "", "", "_GreedyLM_1.0", "_SPGreedy_1.0", "_GFAR_1.0")*/);
 
     private static void initAlgNames(Boolean extended) {
-        algorithmNames.add("FuzzyDHondt");
-        reRankStrings.add("_FuzzyDHondt_1.0");
+        // algorithmNames.add("FuzzyDHondt");
+        // reRankStrings.add("_FuzzyDHondt_1.0");
 
-        algorithmNames.add("FuzzyDHondtDirectOptimize");
-        reRankStrings.add("_FuzzyDHondtDirectOptimize_1.0");
+        // algorithmNames.add("FuzzyDHondtDirectOptimize");
+        // reRankStrings.add("_FuzzyDHondtDirectOptimize_1.0");
 
-        if (extended) {
+        // if (extended) {
 
-            algorithmNames.add("FuzzyDHondtDirectOptimizeLimit4.0");
-            reRankStrings.add("_FuzzyDHondtDirectOptimizeLimit4.0_1.0");
+            // algorithmNames.add("FuzzyDHondtDirectOptimizeLimit4.0");
+            // reRankStrings.add("_FuzzyDHondtDirectOptimizeLimit4.0_1.0");
 
-            algorithmNames.add("FuzzyDHondtDirectOptimizeRelu0.5");
-            reRankStrings.add("_FuzzyDHondtDirectOptimizeRelu0.5_1.0");
+            // algorithmNames.add("FuzzyDHondtDirectOptimizeRelu0.5");
+            // reRankStrings.add("_FuzzyDHondtDirectOptimizeRelu0.5_1.0");
 
-            algorithmNames.add("FuzzyDHondtDirectOptimizeRelu0.125");
-            reRankStrings.add("_FuzzyDHondtDirectOptimizeRelu0.125_1.0");
+            // algorithmNames.add("FuzzyDHondtDirectOptimizeRelu0.125");
+            // reRankStrings.add("_FuzzyDHondtDirectOptimizeRelu0.125_1.0");
 
-            algorithmNames.add("FuzzyDHondtDirectOptimizePosDiscount");
-            reRankStrings.add("_FuzzyDHondtDirectOptimizePosDiscount_1.0");
+            // algorithmNames.add("FuzzyDHondtDirectOptimizePosDiscount");
+            // reRankStrings.add("_FuzzyDHondtDirectOptimizePosDiscount_1.0");
 
-            algorithmNames.add("FuzzyDHondtDirectOptimizeConstDec4");
-            reRankStrings.add("_FuzzyDHondtDirectOptimizeConstDec4_1.0");
+            // algorithmNames.add("FuzzyDHondtDirectOptimizeConstDec4");
+            // reRankStrings.add("_FuzzyDHondtDirectOptimizeConstDec4_1.0");
 
-            algorithmNames.add("FuzzyDHondtDirectOptimizeConstDec3.5");
-            reRankStrings.add("_FuzzyDHondtDirectOptimizeConstDec3.5_1.0");
+            // algorithmNames.add("FuzzyDHondtDirectOptimizeConstDec3.5");
+            // reRankStrings.add("_FuzzyDHondtDirectOptimizeConstDec3.5_1.0");
 
             algorithmNames.add("FuzzyDHondtDirectOptimizeExcessMul0.2");
             reRankStrings.add("_FuzzyDHondtDirectOptimizeExcessMul0.2_1.0");
@@ -64,7 +63,7 @@ public class FairnessCollectResults {
             
             algorithmNames.add("FuzzyDHondtDirectOptimizeExp2CDec3Relu0.25Exc0.25");
             reRankStrings.add("_FuzzyDHondtDirectOptimizeExp2CDec3Relu0.25Exc0.25");
-        }
+        // }
     }
 
     public static void main(String[] args) throws Exception {
@@ -75,9 +74,6 @@ public class FairnessCollectResults {
         if (params == null) {
             System.exit(1);
         }
-
-        params.datasets = new ArrayList<>(Arrays.asList("ml1m"));
-
         
         String PROJECT_FOLDER = Paths.get(System.getProperty("user.dir")).getParent().toString();
 
@@ -92,8 +88,9 @@ public class FairnessCollectResults {
             System.out.println("=================================================");
             System.out.println("=================================================");
         }
-
-        Boolean useMFSet = Arrays.asList(args).contains("--useMFSet");
+        
+        // Boolean useMFSet = Arrays.asList(args).contains("--useMFSet");
+        Boolean useMFSet = true;
         if (useTrainingSet) {
             System.out.println("=================================================");
             System.out.println("=================================================");
@@ -169,20 +166,24 @@ public class FairnessCollectResults {
                             String testDataPath = DATA_PATH + fold + "/" + testFileUsed;
                             
                             PreferenceData<Long, Long> testData = SimplePreferenceData.load(GFARPreferenceReader.get().read(testDataPath, lp, lp));
+
                             BinaryRelevanceModel<Long, Long> binRel = new BinaryRelevanceModel<>(false, testData, relevanceThreshold);
+                            RelevanceModel<Long, Long> rm_0_lin = new RelevanceModel<>(false, testData, 0, "LIN");
+                            RelevanceModel<Long, Long> rm_threshold_lin = new RelevanceModel<>(false, testData, relevanceThreshold, "LIN");
+
                             RecommendationFormat<Long, Long> format = new SimpleRecommendationFormat<Long, Long>(lp, lp);
                             String recIn = DATA_PATH + fold + "/" + fileName + reRank;
                             List<Pair<String, SystemMetric<Long, Long>>> sysMetrics = new ArrayList<>();
                             List<Pair<String, RecommendationMetric<Long, Long>>> recMetrics = new ArrayList<>();
 
                             // Zero Recall Metric
-                            // recMetrics.add(new Pair<>("recallzero", new RecallGroupFairness<>(cutoff, groups, binRel, "ZERO")));
+                            recMetrics.add(new Pair<>("recallzero", new RecallGroupFairness<>(cutoff, groups, binRel, "ZERO")));
 
-                            // // Recall Metrics (mean, min, minmax)
-                            // recMetrics.add(new Pair<>("recall", new RecallGroupFairness<>(cutoff, groups, binRel, "AVG")));
-                            // recMetrics.add(new Pair<>("recallmin", new RecallGroupFairness<>(cutoff, groups, binRel, "MIN")));
-                            // recMetrics.add(new Pair<>("recallminmax", new RecallGroupFairness<>(cutoff, groups, binRel, "MIN-MAX")));
-                            // recMetrics.add(new Pair<>("recallstd", new RecallGroupFairness<>(cutoff, groups, binRel, "STD")));
+                            // Recall Metrics (mean, min, minmax)
+                            recMetrics.add(new Pair<>("recall", new RecallGroupFairness<>(cutoff, groups, binRel, "AVG")));
+                            recMetrics.add(new Pair<>("recallmin", new RecallGroupFairness<>(cutoff, groups, binRel, "MIN")));
+                            recMetrics.add(new Pair<>("recallminmax", new RecallGroupFairness<>(cutoff, groups, binRel, "MIN-MAX")));
+                            recMetrics.add(new Pair<>("recallstd", new RecallGroupFairness<>(cutoff, groups, binRel, "STD")));
 
                             recMetrics.add(new Pair<>("precision", new PrecisionGroup<>(cutoff, groups, binRel, "AVG")));
                             recMetrics.add(new Pair<>("precisionmin", new PrecisionGroup<>(cutoff, groups, binRel, "MIN")));
@@ -203,28 +204,29 @@ public class FairnessCollectResults {
                             // recMetrics.add(new Pair<>("ndcgstd_treshold_0", new NDCGGroupFairness<>(new RelevanceModel<>(false, testData, 0, "EXP"), cutoff, ldisc, groups, "STD")));
 
 
-
+                            
                             // LINEAR RELEVANCE GAIN
                             // NDCG Metrics (mean, min, minmax)
-                            recMetrics.add(new Pair<>("ndcg_linear_gain", new NDCGGroupFairness<>(new RelevanceModel<>(false, testData, relevanceThreshold, "LIN"), cutoff, ldisc, groups, "AVG")));
-                            recMetrics.add(new Pair<>("ndcgmin_linear_gain", new NDCGGroupFairness<>(new RelevanceModel<>(false, testData, relevanceThreshold, "LIN"), cutoff, ldisc, groups, "MIN")));
-                            recMetrics.add(new Pair<>("ndcgminmax_linear_gain", new NDCGGroupFairness<>(new RelevanceModel<>(false, testData, relevanceThreshold, "LIN"), cutoff, ldisc, groups, "MIN-MAX")));
-                            recMetrics.add(new Pair<>("ndcg_linear_gain_std", new NDCGGroupFairness<>(new RelevanceModel<>(false, testData, relevanceThreshold, "LIN"), cutoff, ldisc, groups, "STD")));
-
+                            recMetrics.add(new Pair<>("ndcg_linear_gain", new NDCGGroupFairness<>(rm_threshold_lin, cutoff, ldisc, groups, "AVG")));
+                            recMetrics.add(new Pair<>("ndcgmin_linear_gain", new NDCGGroupFairness<>(rm_threshold_lin, cutoff, ldisc, groups, "MIN")));
+                            recMetrics.add(new Pair<>("ndcgminmax_linear_gain", new NDCGGroupFairness<>(rm_threshold_lin, cutoff, ldisc, groups, "MIN-MAX")));
+                            recMetrics.add(new Pair<>("ndcg_linear_gain_std", new NDCGGroupFairness<>(rm_threshold_lin, cutoff, ldisc, groups, "STD")));
+                            
                             // LINEAR RELEVANCE GAIN
                             // NDCG Metrics (mean, min, minmax) without treshold
-                            recMetrics.add(new Pair<>("ndcg_linear_gain_treshold_0", new NDCGGroupFairness<>(new RelevanceModel<>(false, testData, 0, "LIN"), cutoff, ldisc, groups, "AVG")));
-                            recMetrics.add(new Pair<>("ndcgmin_linear_gain_treshold_0", new NDCGGroupFairness<>(new RelevanceModel<>(false, testData, 0, "LIN"), cutoff, ldisc, groups, "MIN")));
-                            recMetrics.add(new Pair<>("ndcgminmax_linear_gain_treshold_0", new NDCGGroupFairness<>(new RelevanceModel<>(false, testData, 0, "LIN"), cutoff, ldisc, groups, "MIN-MAX")));
-                            recMetrics.add(new Pair<>("ndcgstd_linear_gain_treshold_0", new NDCGGroupFairness<>(new RelevanceModel<>(false, testData, 0, "LIN"), cutoff, ldisc, groups, "STD")));
-
-
+                            recMetrics.add(new Pair<>("ndcg_linear_gain_treshold_0", new NDCGGroupFairness<>(rm_0_lin, cutoff, ldisc, groups, "AVG")));
+                            recMetrics.add(new Pair<>("ndcgmin_linear_gain_treshold_0", new NDCGGroupFairness<>(rm_0_lin, cutoff, ldisc, groups, "MIN")));
+                            recMetrics.add(new Pair<>("ndcgminmax_linear_gain_treshold_0", new NDCGGroupFairness<>(rm_0_lin, cutoff, ldisc, groups, "MIN-MAX")));
+                            recMetrics.add(new Pair<>("ndcgstd_linear_gain_treshold_0", new NDCGGroupFairness<>(rm_0_lin, cutoff, ldisc, groups, "STD")));
+                            
+                            
                             // BINAR RELEVANCE GAIN
                             // NDCG Metrics (mean, min, minmax)
-                            recMetrics.add(new Pair<>("ndcg_bin_gain", new NDCGGroupFairness<>(new RelevanceModel<>(false, testData, relevanceThreshold, "BIN"), cutoff, ldisc, groups, "AVG")));
-                            recMetrics.add(new Pair<>("ndcgmin_bin_gain", new NDCGGroupFairness<>(new RelevanceModel<>(false, testData, relevanceThreshold, "BIN"), cutoff, ldisc, groups, "MIN")));
-                            recMetrics.add(new Pair<>("ndcgminmax_bin_gain", new NDCGGroupFairness<>(new RelevanceModel<>(false, testData, relevanceThreshold, "BIN"), cutoff, ldisc, groups, "MIN-MAX")));
-                            recMetrics.add(new Pair<>("ndcg_bin_gain_std", new NDCGGroupFairness<>(new RelevanceModel<>(false, testData, relevanceThreshold, "BIN"), cutoff, ldisc, groups, "STD")));
+                            RelevanceModel<Long, Long> rm_threshold_bin = new RelevanceModel<>(false, testData, relevanceThreshold, "BIN");
+                            recMetrics.add(new Pair<>("ndcg_bin_gain", new NDCGGroupFairness<>(rm_threshold_bin, cutoff, ldisc, groups, "AVG")));
+                            recMetrics.add(new Pair<>("ndcgmin_bin_gain", new NDCGGroupFairness<>(rm_threshold_bin, cutoff, ldisc, groups, "MIN")));
+                            recMetrics.add(new Pair<>("ndcgminmax_bin_gain", new NDCGGroupFairness<>(rm_threshold_bin, cutoff, ldisc, groups, "MIN-MAX")));
+                            recMetrics.add(new Pair<>("ndcg_bin_gain_std", new NDCGGroupFairness<>(rm_threshold_bin, cutoff, ldisc, groups, "STD")));
 
 
                             // relevance sum
@@ -240,15 +242,15 @@ public class FairnessCollectResults {
 
 
                             // relevance sum
-                            recMetrics.add(new Pair<>("relevancesum_linear_gain", new RelevanceSumGroupFairness<>(new RelevanceModel<>(false, testData, relevanceThreshold, "LIN"), cutoff, groups, "AVG")));
-                            recMetrics.add(new Pair<>("relevancesummin_linear_gain", new RelevanceSumGroupFairness<>(new RelevanceModel<>(false, testData, relevanceThreshold, "LIN"), cutoff, groups, "MIN")));
-                            recMetrics.add(new Pair<>("relevancesumminmax_linear_gain", new RelevanceSumGroupFairness<>(new RelevanceModel<>(false, testData, relevanceThreshold, "LIN"), cutoff, groups, "MIN-MAX")));
-                            recMetrics.add(new Pair<>("relevancesumstd_linear_gain", new RelevanceSumGroupFairness<>(new RelevanceModel<>(false, testData, relevanceThreshold, "LIN"), cutoff, groups, "STD")));
+                            // recMetrics.add(new Pair<>("relevancesum_linear_gain", new RelevanceSumGroupFairness<>(rm_threshold_lin, cutoff, groups, "AVG")));
+                            // recMetrics.add(new Pair<>("relevancesummin_linear_gain", new RelevanceSumGroupFairness<>(rm_threshold_lin, cutoff, groups, "MIN")));
+                            // recMetrics.add(new Pair<>("relevancesumminmax_linear_gain", new RelevanceSumGroupFairness<>(rm_threshold_lin, cutoff, groups, "MIN-MAX")));
+                            // recMetrics.add(new Pair<>("relevancesumstd_linear_gain", new RelevanceSumGroupFairness<>(rm_threshold_lin, cutoff, groups, "STD")));
 
-                            recMetrics.add(new Pair<>("relevancesum_linear_gain_treshold_0", new RelevanceSumGroupFairness<>(new RelevanceModel<>(false, testData, 0, "LIN"), cutoff, groups, "AVG")));
-                            recMetrics.add(new Pair<>("relevancesummin_linear_gain_treshold_0", new RelevanceSumGroupFairness<>(new RelevanceModel<>(false, testData, 0, "LIN"), cutoff, groups, "MIN")));
-                            recMetrics.add(new Pair<>("relevancesumminmax_linear_gain_treshold_0", new RelevanceSumGroupFairness<>(new RelevanceModel<>(false, testData, 0, "LIN"), cutoff, groups, "MIN-MAX")));
-                            recMetrics.add(new Pair<>("relevancesumstd_linear_gain_treshold_0", new RelevanceSumGroupFairness<>(new RelevanceModel<>(false, testData, 0, "LIN"), cutoff, groups, "STD")));
+                            recMetrics.add(new Pair<>("relevancesum_linear_gain_treshold_0", new RelevanceSumGroupFairness<>(rm_0_lin, cutoff, groups, "AVG")));
+                            recMetrics.add(new Pair<>("relevancesummin_linear_gain_treshold_0", new RelevanceSumGroupFairness<>(rm_0_lin, cutoff, groups, "MIN")));
+                            recMetrics.add(new Pair<>("relevancesumminmax_linear_gain_treshold_0", new RelevanceSumGroupFairness<>(rm_0_lin, cutoff, groups, "MIN-MAX")));
+                            recMetrics.add(new Pair<>("relevancesumstd_linear_gain_treshold_0", new RelevanceSumGroupFairness<>(rm_0_lin, cutoff, groups, "STD")));
 
 
                             // DFH Metrics (mean, min, minmax)
@@ -257,7 +259,13 @@ public class FairnessCollectResults {
                             recMetrics.add(new Pair<>("dfhminmax", new DiscountedFirstHitFairness<>(cutoff, ldisc, groups, binRel, "MIN-MAX")));
                             recMetrics.add(new Pair<>("dfhstd", new DiscountedFirstHitFairness<>(cutoff, ldisc, groups, binRel, "STD")));
 
-                            recMetrics.forEach(pair -> sysMetrics.add(new Pair<>(pair.getValue0(), new AverageRecommendationMetric<>(pair.getValue1(), true))));
+                            recMetrics.forEach(pair -> {
+                                if(pair.getValue0().contains("std")){
+                                    sysMetrics.add(new Pair<>(pair.getValue0(), new AverageRecommendationMetric<>(pair.getValue1(), /*ignore N/A*/true)));
+                                } else {
+                                    sysMetrics.add(new Pair<>(pair.getValue0(), new AverageRecommendationMetric<>(pair.getValue1(), numGroups)));
+                                }
+                            });
 
                             // format.getReader(recIn).readAll().forEach(rec -> sysMetrics.values().forEach(metric -> metric.add(rec)));
                             for(Recommendation<Long, Long> recommendation : format.getReader(recIn).readAll().collect(Collectors.toList())){

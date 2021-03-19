@@ -68,7 +68,6 @@ public class EFGreedy<G, U, I> extends LambdaReranker<G, I> {
                     Object2DoubleOpenHashMap<I> uRanks = new Object2DoubleOpenHashMap<>();
 
                     for (int i = 0; i < temp.size(); i++) {
-                        double rank = maxLength - (i + 1);
                         double score = temp.get(i).v2;
                         uRanks.addTo(temp.get(i).v1, score);
                     }
@@ -115,6 +114,7 @@ public class EFGreedy<G, U, I> extends LambdaReranker<G, I> {
         @Override
         protected void update(Tuple2od<I> iv) {
             // Update individual utility for each group member here, after selecting a new item greedily!
+            System.out.println("Object selected: " + iv.v1);
 
             List<Tuple2od<U>> uRanks = new ArrayList<>();
 

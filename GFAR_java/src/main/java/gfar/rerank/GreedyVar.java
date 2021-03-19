@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -114,6 +113,7 @@ public class GreedyVar<G, U, I> extends LambdaReranker<G, I> {
 
         @Override
         protected void update(Tuple2od<I> bestItemValue) {
+            System.out.println("Object selected: " + bestItemValue.v1);
             // Update individual utility for each group member here, after selecting a new item greedily!
             group_members.get(group).forEach(u -> {
                 double increment = 0.0;

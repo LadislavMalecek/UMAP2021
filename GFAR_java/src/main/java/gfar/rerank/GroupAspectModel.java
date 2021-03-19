@@ -13,7 +13,6 @@ public abstract class GroupAspectModel<G,I,U> extends UserModel<G> {
     protected GroupIntentModel<G,I,U> intentModel;
     public GroupAspectModel(GroupIntentModel<G,I,U> iModel){this.intentModel = iModel;}
 
-    @SuppressWarnings("unchecked")
     @Override
     public GroupMembersAspectModel getModel(G group) {
         return (GroupMembersAspectModel) super.getModel(group);

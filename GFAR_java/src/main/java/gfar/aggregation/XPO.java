@@ -13,7 +13,7 @@ XPO algorithm from the paper Dimitris Sacharidis. 2019. Top-N group recommendati
 In Procs. of the 34th ACM/SIGAPP Symposium on Applied Computing. 1663–1670.
  */
 
-public class XPO<U, I, G> extends AbstractAggregationStrategy<U, I, G> {
+public class XPO<U, I, G> implements AggregationStrategy<U, I, G> {
     private G groupID;
     private List<U> group_members;
     private int top_N;

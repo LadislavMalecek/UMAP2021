@@ -74,7 +74,6 @@ public class RunDDOA {
                             LoadData.loadGroupsWithUniformUserPreferences(groupsFilePath, 1.0);
 
                         for (double lambda : lambdas) {
-
                             rerankersMap.put("FuzzyDHondt" + "_" + lambda, () -> new FuzzyDHondt<>(lambda, cutoff, true,
                                     maxLength, groups, individualRecommendations, null, null, null, null));
 

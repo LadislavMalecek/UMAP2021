@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * SPGreedy algorithm from the paper "Fairness in Package-to-Group
@@ -31,19 +32,34 @@ public class FuzzyDHondt<G, U, I> extends LambdaReranker<G, I> {
     protected int maxLength;
     protected Map<U, Recommendation<U, I>> individualRecommendations;
 
+    // used to return relevance of recommended items per users
+    protected Map<G, List<Double>> returnGroupItemsRelevance;
+
     // rearanged recommandations to allow for mor efficient data access
     protected Map<U, Map<I, Double>> recommendations;
 
-    public FuzzyDHondt(double lambda, int cutoff, boolean norm, int maxLength, Map<G, Pair<List<U>, List<Double>>> groupMembers,
-            Map<U, Recommendation<U, I>> individualRecommendations,
-            Double minimumItemScoreToBeConsidered, Double constantDecrease, Double negativePartMultiplier, Double exponentialFactor) {
+    public FuzzyDHondt(Double lambda, int cutoff, boolean norm, int maxLength,
+        Map<G, Pair<List<U>, List<Double>>> groupMembers, Map<U, Recommendation<U, I>> individualRecommendations,
+        Double minimumItemScoreToBeConsidered, Double constantDecrease, Double negativePartMultiplier,
+        Double exponentialFactor){
+        this(lambda,  cutoff, norm, maxLength, groupMembers, individualRecommendations, minimumItemScoreToBeConsidered,
+        constantDecrease, negativePartMultiplier, exponentialFactor, null);
+    }
+
+    public FuzzyDHondt(double lambda, int cutoff, boolean norm, int maxLength,
+            Map<G, Pair<List<U>, List<Double>>> groupMembers, Map<U, Recommendation<U, I>> individualRecommendations,
+            Double minimumItemScoreToBeConsidered, Double constantDecrease, Double negativePartMultiplier,
+            Double exponentialFactor, Map<G, List<Double>> returnGroupItemsRelevance) {
         super(lambda, cutoff, norm);
         System.out.println("FuzzyDHondt constructor");
         this.groupMembers = groupMembers;
         this.individualRecommendations = individualRecommendations;
         this.maxLength = maxLength;
 
-        this.TransformRecommendations(minimumItemScoreToBeConsidered, constantDecrease, negativePartMultiplier, exponentialFactor);
+        this.TransformRecommendations(minimumItemScoreToBeConsidered, constantDecrease, negativePartMultiplier,
+                exponentialFactor);
+
+        this.returnGroupItemsRelevance = returnGroupItemsRelevance;
     }
 
     // Transforms recommendations into sensible data access first format
@@ -61,7 +77,7 @@ public class FuzzyDHondt<G, U, I> extends LambdaReranker<G, I> {
                     rating -= constantDecrease;
                 }
 
-                if(rating < 0 && negativePartMultiplier != null){
+                if (rating < 0 && negativePartMultiplier != null) {
                     rating *= negativePartMultiplier;
                 }
 
@@ -69,7 +85,7 @@ public class FuzzyDHondt<G, U, I> extends LambdaReranker<G, I> {
                     // skip adding the value - so when retrieved it will be the default 0
                     continue;
                 }
-                if(exponentialFactor != null){
+                if (exponentialFactor != null && rating > 0) {
                     rating = Math.pow(rating, exponentialFactor);
                 }
                 userMap.put(recommendation.v1, recommendation.v2);
@@ -103,7 +119,6 @@ public class FuzzyDHondt<G, U, I> extends LambdaReranker<G, I> {
         // sum of relevance of already selected items to each user
         private Double[] alreadySelectedItemsRelevanceToUsers;
 
-
         /**
          * Constructor.
          *
@@ -119,10 +134,11 @@ public class FuzzyDHondt<G, U, I> extends LambdaReranker<G, I> {
             this.usersInGroup = groupMembers.get(this.group).getValue0();
             this.usersPrefInGroup = groupMembers.get(this.group).getValue1();
             int groupSize = this.usersInGroup.size();
-            
-            // initialize the preferences, if pref included in data then use them, if not use uniform 1
+
+            // initialize the preferences, if pref included in data then use them, if not
+            // use uniform 1
             boolean prefdataMissing = this.usersPrefInGroup == null || this.usersPrefInGroup.isEmpty();
-            if(prefdataMissing){
+            if (prefdataMissing) {
                 this.startingVotingSupport = new Double[groupSize];
                 Arrays.fill(this.startingVotingSupport, 1.0);
                 this.currentVotingSupportToUsers = new Double[groupSize];
@@ -135,8 +151,6 @@ public class FuzzyDHondt<G, U, I> extends LambdaReranker<G, I> {
             this.alreadySelectedItemsRelevanceToUsers = new Double[groupSize];
             Arrays.fill(this.alreadySelectedItemsRelevanceToUsers, 1.0);
         }
-
-        
 
         private void recalculateCurrentDHnodtsSupport() {
             for (int uIndex = 0; uIndex < this.usersInGroup.size(); uIndex++) {
@@ -195,6 +209,15 @@ public class FuzzyDHondt<G, U, I> extends LambdaReranker<G, I> {
             }
 
             this.recalculateCurrentDHnodtsSupport();
+
+            // we could do this also in discounted fassion
+            if (returnGroupItemsRelevance != null) {
+                Double sum = Arrays.asList(this.alreadySelectedItemsRelevanceToUsers).stream().mapToDouble(m -> m)
+                        .sum();
+                List<Double> normalized = Arrays.asList(this.alreadySelectedItemsRelevanceToUsers).stream()
+                        .map(m -> m / sum).collect(Collectors.toList());
+                returnGroupItemsRelevance.put(group, normalized);
+            }
         }
     }
 }
