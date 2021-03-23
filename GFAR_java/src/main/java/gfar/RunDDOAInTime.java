@@ -92,20 +92,20 @@ public class RunDDOAInTime {
                             String algName = "";
 
                             if (alg == "default") {
-                                algName = "FuzzyDHondt-F";
+                                algName = "FuzzyDHondt_longterm";
                                 rerankersMap.put(algName,
                                         () -> new FuzzyDHondt<>(1.0, cutoff, true, maxLength, groups,
                                                 individualRecommendations, null, null, null, null,
                                                 currentRunEndGroupUsersPref));
 
                             } else if (alg == "directOptimize") {
-                                algName = "FuzzyDHondtDirectOptimize-F";
+                                algName = "FuzzyDHondtDirectOptimize_longterm";
                                 rerankersMap.put(algName,
                                         () -> new FuzzyDHondtDirectOptimize<>(1.0, cutoff, true, maxLength, groups,
                                                 individualRecommendations, null, null, null, false, null, null,
                                                 currentRunEndGroupUsersPref));
                             } else if (alg == "avg") {
-                                algName = "AVG-F";
+                                algName = "AVG_longterm";
                                 String recOut = DATA_PATH + fold + "/" + fileName + "_" + algName;
                                 computeGroupRecs(recOut, groups, individualRecommendations, format, currentRunEndGroupUsersPref);
                             } else {

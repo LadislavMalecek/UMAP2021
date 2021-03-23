@@ -1,5 +1,5 @@
 mvn clean compile;
-# export MAVEN_OPTS="-Xmx9000M"
+export MAVEN_OPTS="-Xmx11000M"
 
 
 for g_s in 2 3 4 8

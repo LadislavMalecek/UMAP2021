@@ -1,12 +1,12 @@
 mvn clean compile;
-# export MAVEN_OPTS="-Xmx9000M"
+export MAVEN_OPTS="-Xmx11000M"
 
 
 # before running this
 # - generate results of standard non-weighted script
 # - generate weights using python script
 
-for g_s in 8
+for g_s in 2 3 4 8
 do
     for g in sim
     do
