@@ -143,6 +143,9 @@ public class RunDDOA {
                         rerankersMap.forEach(Unchecked.biConsumer((name, rerankerSupplier) -> {
                             System.out.println("Running " + name);
                             String recOut = DATA_PATH + fold + "/" + fileName + "_" + name;
+                            if(runUserPref){
+                                recOut = DATA_PATH + fold + "/" + fileName + "_" + name + "_weighted";
+                            }
                             System.out.println(recOut);
                             Reranker<Long, Long> reranker = rerankerSupplier.get();
                             try (RecommendationFormat.Writer<Long, Long> writer = format.getWriter(recOut)) {
