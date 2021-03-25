@@ -9,6 +9,13 @@ Ladislav Malecek
 
 Ladislav Peska
 
+## Abstract
+Group recommendations are an extension of "single-user" personalized recommender systems (RS), where the final recommendations should comply with preferences of several group members. 
+An important challenge in group RS is the problem of fairness, i.e., no user's preferences should be largely ignored by the RS. Traditional strategies, such as "least misery" or "average rating", tackle the problem of fairness, but they resolve it separately for each item. This may cause a systematic bias against some group members.
+
+In contrast, this paper considers both fairness and relevance as a rank-sensitive list property. We propose EP-FuzzDA algorithm that utilizes an optimization criterion encapsulating both fairness and relevance. In conducted experiments, EP-FuzzDA outperforms several state-of-the-art baselines. 
+Another advantage of EP-FuzzDA is the capability to adjust on non-uniform importance of group members enabling e.g. to maintain the long-term fairness across several recommending sessions.
+
 ## Repository content
 - data folder contains evaluation datasets (MovieLens 1M and KGRec-Music)
 - java folder contains implementation of EP-FuzzDA algorithm as well as baseline methods and underlying ALS MF recommending algorithm
