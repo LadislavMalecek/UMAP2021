@@ -35,9 +35,6 @@ public class RunDDOAInTime {
             System.exit(1);
         }
 
-        params.datasets = Arrays.asList("ml1m");
-        params.individualRecFileName = Arrays.asList("mf_30_1.0");
-
         int cutoff = 10000;
         int maxLength = 20;
 
