@@ -89,13 +89,12 @@ public class FairnessCollectResults {
             System.out.println("=================================================");
         }
         
-        // Boolean useMFSet = Arrays.asList(args).contains("--useMFSet");
-        Boolean useMFSet = true;
-        if (useTrainingSet) {
+        Boolean useMFSet = Arrays.asList(args).contains("--useMFSet");
+        if (useMFSet) {
             System.out.println("=================================================");
             System.out.println("=================================================");
             System.out.println("=================================================");
-            System.out.println("Results collected using training&test set");
+            System.out.println("Results collected using MF set");
             System.out.println("=================================================");
             System.out.println("=================================================");
             System.out.println("=================================================");
